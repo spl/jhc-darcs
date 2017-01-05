@@ -1,0 +1,267 @@
+
+New patches:
+
+[unrevert
+anon**20170105093622
+ Ignore-this: 470ee55da282ce0c943b0aff22b80775
+] hunk ./lib/haskell-extras/System/IO.hs 32
+     openFile,
+     openBinaryFile,
+     withFile,
++    withBinaryFile,
+     fixIO,
+     HandlePosn,
+     stdin,stdout,stderr,
+hunk ./lib/haskell-extras/System/IO.hs 53
+ import Jhc.Type.C
+ import System.C.Stdio
+ import System.IO.Error
++import Control.Exception (bracket, )
+ 
+ data BufferMode = NoBuffering | LineBuffering | BlockBuffering (Maybe Int)
+     deriving(Eq, Ord, Read, Show)
+hunk ./lib/haskell-extras/System/IO.hs 66
+ hIsWritable h = return $ handleIOMode h `elem` [AppendMode,WriteMode,ReadWriteMode]
+ 
+ withFile :: FilePath -> IOMode -> (Handle -> IO r) -> IO r
+-withFile fp iom action = do
+-    h <- openFile fp iom
+-    r <- action h
+-    hClose h
+-    return r
++withFile fp iom = bracket (openFile fp iom) hClose
++
++withBinaryFile :: FilePath -> IOMode -> (Handle -> IO r) -> IO r
++withBinaryFile fp iom = bracket (openBinaryFile fp iom) hClose
+ 
+ hIsClosed h = not `fmap` hIsOpen h
+ 
+
+Context:
+
+[fix shiftr
+John Meacham <john@repetae.net>**20140713191247
+ Ignore-this: e812e0175f2c83d9a2b23d760d58ef58
+] 
+[make things look pretty by aligning them
+John Meacham <john@repetae.net>**20140613042848
+ Ignore-this: 1f51dce04af2df7c57d903514f87a369
+] 
+[optimize Info layout by inlining properties.
+John Meacham <john@repetae.net>**20140613030341
+ Ignore-this: 4ac6f897a4a326f4a2b592fea3b7c0fb
+] 
+[switch Info to use a map now that TypeRep has an Ord instance
+John Meacham <john@repetae.net>**20140613022444
+ Ignore-this: 3fca57d382c13f07dabd69d9b21529ca
+] 
+[fix cleaning up of temporary files
+John Meacham <john@repetae.net>**20140613002116
+ Ignore-this: 6396415403b046637c72f2b35c2c3099
+] 
+[add code to query gcc compiler for features
+John Meacham <john@repetae.net>**20140613002101
+ Ignore-this: 20eafef82fbd26f482e1f6c3553beb7
+] 
+[clean up some name code, remove dependency on 'syb'
+John Meacham <john@repetae.net>**20140612091514
+ Ignore-this: ac189a023514aa159a6b50a71b2405f2
+] 
+[add LibraryDepsUnused field to dependencies to show libraries that were included but no code ended up being used from.
+John Meacham <john@repetae.net>**20140612084056
+ Ignore-this: 84e8df17ccf139b9a355460915a4efee
+] 
+[ensure lexing halts on error
+John Meacham <john@repetae.net>**20140611224608
+ Ignore-this: cf20967797fd500f20b63993b754b9f1
+] 
+[fix HsAsst creation so it always gets the right nametypes
+John Meacham <john@repetae.net>**20140611224602
+ Ignore-this: c3eb494c39d4e6939dcda4b251a65a55
+] 
+[cache NameType inside of name number
+John Meacham <john@repetae.net>**20140611192901
+ Ignore-this: d2fb7eea0bcec0d6d7600f8a4fa93c53
+] 
+[squish atoms to 23 bits instead of 31, allowing tagging.
+John Meacham <john@repetae.net>**20140611052201
+ Ignore-this: 6c985025069535edb561bde596eb0d4
+] 
+[don't shift by one bit in atom and make a defined empty atom that is always zero
+John Meacham <john@repetae.net>**20140611041522
+ Ignore-this: e46a5fe7f0300fdabdd6192e0fa98200
+] 
+[remove old layout code, add wl-pprint as external library. 
+John Meacham <john@repetae.net>**20140611035444
+ Ignore-this: 5154ec19399928432b9e13eb8cf42109
+] 
+[add new layout code
+John Meacham <john@repetae.net>**20140611005819
+ Ignore-this: 23dde151939b5b43649c267addf8cfd9
+] 
+[support subnames
+John Meacham <john@repetae.net>**20140610150225
+ Ignore-this: 920c7729e7ff5fd32d2a89116e9a1a98
+] 
+[rearrange list lib routines, make 'undefined' print location.
+John Meacham <john@repetae.net>**20140610123325
+ Ignore-this: 5ad5a83298708eb291cf32b65a5edc98
+] 
+[improve list comprehension desugaring to remove more intermediate lists
+John Meacham <john@repetae.net>**20140610092715
+ Ignore-this: 55d64220e5d8ea91b24c86870f32de3b
+] 
+[add more error checks
+John Meacham <john@repetae.net>**20140610070448
+ Ignore-this: 8be80ca6034d65395af8c08b4acf271d
+] 
+[make exit code indicate failure mode
+John Meacham <john@repetae.net>**20140610062952
+ Ignore-this: 5460d87645792c5cc418cf099cfa8814
+] 
+[add exit code table
+John Meacham <john@repetae.net>**20140610054301
+ Ignore-this: dbdc592b8b17bf02593c98599907d26b
+] 
+[defer lambda desugaring to type checker. catch multiply defined vars in pats errors, catch and report obvious tuple usage errors early to produce better error messages
+John Meacham <john@repetae.net>**20140610052915
+ Ignore-this: c4c5ef5012fd0878ff8dbca366fb1a51
+] 
+[fix bug in lambda desugaring of const failable patterns
+John Meacham <john@repetae.net>**20140610034601
+ Ignore-this: 1a72ba419ed41167a164f60e2d58d8dd
+] 
+[simplify post, fix bug parsing funbindings of the form ((a + b) c d)
+John Meacham <john@repetae.net>**20140610032907
+ Ignore-this: 7ae007d0274f02579a47a7d63184b661
+] 
+[add wl-pprint to ext libs
+John Meacham <john@repetae.net>**20140610032602
+ Ignore-this: d58ee05c18db540cc718445c76d24422
+] 
+[make '-p' handling consistent. handle empty 'options' field in library desc files, when an unknown module is imported, suggest packages to include
+John Meacham <john@repetae.net>**20140609153806
+ Ignore-this: 8f4c7f3e932ac3741a8da8eebd40ba8b
+] 
+[improve help messages some
+John Meacham <john@repetae.net>**20140609134231
+ Ignore-this: 32039f114791c8d3b8bd703c7b8ba0e5
+] 
+[improve error messages some more
+John Meacham <john@repetae.net>**20140609021208
+ Ignore-this: ab084930b842366a9cd0c74957f0e5ed
+] 
+[greatly improve type checking error messages.
+John Meacham <john@repetae.net>**20140608164244
+ Ignore-this: cea2afea376b31916fcc98bea1354fdb
+] 
+[typecheck 'do' blocks directly. add partial application of (->) to boxy matching
+John Meacham <john@repetae.net>**20140608103012
+ Ignore-this: 697dc2b544b6a717b0f95240ba4de6a2
+] 
+[add methods to applicative
+John Meacham <john@repetae.net>**20140608102707
+ Ignore-this: 7b79da303dea977a5af075eb04895553
+] 
+[remove old DrIFT based deriving code. utiize LambdaCase in list and do desugarings to simplify them.
+John Meacham <john@repetae.net>**20140608050936
+ Ignore-this: df422ea53c295e9a05838e831190d043
+] 
+[add LambdaCase extension
+John Meacham <john@repetae.net>**20140608041319
+ Ignore-this: f9dd5cc95608fda42f474c5b50827a42
+] 
+[derive Functor, Foldable, and Traverse
+John Meacham <john@repetae.net>**20140607044544
+ Ignore-this: 5b9e4e65c2371cdccdec4906ddfb564c
+] 
+[add deriving Read
+John Meacham <john@repetae.net>**20140606233805
+ Ignore-this: 1fb3e2597da20b156f102cd85da0047c
+] 
+[add typeclass document
+John Meacham <john@repetae.net>**20140606053339
+ Ignore-this: bbf8a0bd7c07cfd6321514281cefa4cb
+] 
+[add deriving Ix and Enum, make actual error messages when deriving fails
+John Meacham <john@repetae.net>**20140606033717
+ Ignore-this: f9ad8d267e5db58e19cc0b72313ff4f0
+] 
+[collect derivations together into a list
+John Meacham <john@repetae.net>**20140606010702
+ Ignore-this: ccb8e9910dd382f3adf06249b37539c
+] 
+[add new deriving mechanism that builds the AST directly
+John Meacham <john@repetae.net>**20140605132011
+ Ignore-this: c45583092721faaea6482f387cd1340f
+] 
+[add HOT and COLD pragmas, update documentation
+John Meacham <john@repetae.net>**20140605053934
+ Ignore-this: dca03821c336b54f33c5266ba52deb0d
+] 
+[remove toName conversions, add generation of jhc/ext_defs.h
+John Meacham <john@repetae.net>**20140605052000
+ Ignore-this: ff4a182927c15a1948793080d4d5e6be
+] 
+[clean out old decl depends code
+John Meacham <john@repetae.net>**20140604163243
+ Ignore-this: 5e9ab2a496c546b639dcc50d4490d0ca
+] 
+[remove dependency on fgl packages
+John Meacham <john@repetae.net>**20140604145522
+ Ignore-this: a7811befc5130882b4a6390b4213583d
+] 
+[redo how extension options are handled. understand ghc style -X options
+John Meacham <john@repetae.net>**20140604121442
+ Ignore-this: 3f6357d18798211b9dd9c2ffc1d1d3c8
+] 
+[clean up selftest some
+John Meacham <john@repetae.net>**20140604090145
+ Ignore-this: b750b6a607a73a320761dc427bb9ffd6
+] 
+[add tests just to check haskell98 and haskell2010 are exporting all the right modules.
+John Meacham <john@repetae.net>**20140604074508
+ Ignore-this: dd5e786837052bbf8c75c984792f22ad
+] 
+[add record inference extension information
+John Meacham <john@repetae.net>**20140604053714
+ Ignore-this: eea402315485a45a4d170247ea380c89
+] 
+[improve publishing
+John Meacham <john@repetae.net>**20140604015559
+ Ignore-this: 655e19f3e5eab3292f04e831d1a66f07
+] 
+[improve the manual significantly.
+John Meacham <john@repetae.net>**20140604004216
+ Ignore-this: 920d5d93a89f2ab540d15c271b278240
+] 
+[add top level kind signatures, rearrange options, allow --with to load a library context
+John Meacham <john@repetae.net>**20140603111150
+ Ignore-this: cf3d21f6ae205ac8e64d53ab2298c48a
+] 
+[improve documentatoin, add more pragma info
+John Meacham <john@repetae.net>**20140603094724
+ Ignore-this: bb7a0676b6e75bd5c7f2fe36f7c94640
+] 
+[improve manual
+John Meacham <john@repetae.net>**20140603045456
+ Ignore-this: 3f1097c13515fb8b3eec530903cbeae
+] 
+[remove old .cabal handling code
+John Meacham <john@repetae.net>**20140603044530
+ Ignore-this: 61ecf8e31c75206dee4d896d1b64e364
+] 
+[add -mwin64 option for compiling a 64 bit windows program
+John Meacham <john@repetae.net>**20140603004010
+ Ignore-this: afe051fa40709c506101cc7c09a03c65
+] 
+[add some reference header to the repository
+John Meacham <john@repetae.net>**20140603003350
+ Ignore-this: 2926b1538e8abace7f040b2030d4751a
+] 
+[TAG 0.8.2
+John Meacham <john@repetae.net>**20140602180626
+ Ignore-this: 358fa85b89ee4c73f47f7b85e3647a6a
+] 
+Patch bundle hash:
+175526e0a5d43277e1da5f64409c79ee7ec96135
